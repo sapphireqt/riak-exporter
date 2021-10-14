@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: riak-exporter
+  name: riak-exporter
+  namespace: kube-system
+spec:
+  progressDeadlineSeconds: 60
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: riak-exporter
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        prometheus.io/port: "9104"
+        prometheus.io/scrape: "true"
+      labels:
+        app: riak-exporter
+    spec:
+      containers:
+      - args:
+        - -riak.uri
+        - http://my-riak.ex.com:8098
+        command:
+        - /bin/riak-exporter
+        image: vitalik/riak-exporter:latest
+        imagePullPolicy: IfNotPresent
+        name: riak-exporter
+        ports:
+        - containerPort: 9104
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
