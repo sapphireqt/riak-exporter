@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"fmt"
 	"github.com/prometheus/common/version"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
@@ -150,10 +149,8 @@ func (e *Exporter) scrape(ch chan<- prometheus.Metric) error {
 	}
 
 	defer func() {
-		err := statsResponse.Body.Close()
-		if err != nil {
-			panic(fmt.Sprintf("just panic in defer with: %w" , err))
-		}
+		_ = pingResponse.Body.Close()
+		_ = statsResponse.Body.Close()
 	}()
 
 	if statsResponse.StatusCode != 200 {
