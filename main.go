@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"github.com/prometheus/common/version"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/prometheus/common/version"
+	"github.com/sirupsen/logrus"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -51,17 +52,16 @@ type Exporter struct {
 	riakUp          prometheus.Gauge
 }
 
-
-func setLogger() (*logrus.Logger) {
-	Logger := logrus.New()
-	Logger.SetFormatter(
+func setLogger() *logrus.Logger {
+	logger := logrus.New()
+	logger.SetFormatter(
 		&logrus.TextFormatter{
 			ForceColors:     true,
 			FullTimestamp:   true,
 			TimestampFormat: time.RFC3339Nano,
 		},
 	)
-	return Logger
+	return logger
 }
 
 func NewExporter(url string) *Exporter {
@@ -93,6 +93,7 @@ func NewExporter(url string) *Exporter {
 		}),
 	}
 }
+
 func (e *Exporter) Describe(ch chan<- *prometheus.Desc) {
 	metricCh := make(chan prometheus.Metric)
 	doneCh := make(chan struct{})
@@ -191,7 +192,7 @@ func init() {
 }
 
 func main() {
-	Logger := setLogger()
+	logger := setLogger()
 	flag.Parse()
 
 	exporter := NewExporter(*riakURI + "/stats")
@@ -202,12 +203,11 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, err := w.Write(landingPage)
 		if err != nil {
-			Logger.Errorln(err)
+			logger.Errorln(err)
 			return
 		}
-
 	})
 
-	Logger.Infoln("Listening on", *listenAddress)
-	Logger.Fatal(http.ListenAndServe(*listenAddress, nil))
+	logger.Infoln("Listening on", *listenAddress)
+	logger.Fatal(http.ListenAndServe(*listenAddress, nil))
 }
